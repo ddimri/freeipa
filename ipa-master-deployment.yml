@@ -1,0 +1,95 @@
+---
+ - name: Install Ansible on IPA Server
+   hosts: ipamaster
+   become: false
+   vars:
+    ansible_ssh_pipelining: no
+   vars_files:
+    - ~/security/ipa/files/awsindia0cred.yml
+    - ~/security/ipa/files/tf_variables
+   tasks:
+    - name: Disable require tty access in /etc/sudoers
+      replace: dest="/etc/sudoers"
+               regexp='^Defaults    requiretty'
+               replace='Defaults    !requiretty'
+      become: true
+    - name: Install wget package
+      command: sudo yum install wget -y
+      ignore_errors: True
+    - name: get EPEL repo
+      command: sudo wget http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-8.noarch.rpm
+      ignore_errors: True
+    - name: Instal EPEL rpm
+      command: sudo rpm -ivh epel-release-7-8.noarch.rpm
+      ignore_errors: True
+    - name: Install Ansible
+      command: yum -y update
+      become: true
+      command: sudo yum -y install ansible
+      ignore_errors: True
+    - name: Update the hosts file
+      action: lineinfile
+              dest='/etc/hosts'
+              insertafter='^127.0.0.1'
+              line='{{ipa_master_private_ip}}    {{ipa_master_private_dns}}    ipa-server'
+      become: true
+    - name: Update the hostname
+      replace: dest='/etc/hostname'
+               regexp='^ip-'
+               replace='#ip-'
+      become: true
+    - name: Update the hostname
+      action: lineinfile
+              dest='/etc/hostname'
+              line="{{ ipa_master_private_dns }}"
+      become: true
+    - command: sudo yum install ipa-server -y
+    - name: Update /etc/sysconfig/network
+      action: lineinfile
+              dest="/etc/sysconfig/network"
+              line="HOSTNAME={{ipa_master_private_dns}}"
+      become: true
+    - command: sudo sysctl kernel.hostname={{ipa_master_private_dns}}
+    - name: Update /etc/sysconfig/network-scripts/ifcfg-eth0
+      action: lineinfile
+              dest="/etc/sysconfig/network-scripts/ifcfg-eth0"
+              line="IPADDR={{ipa_master_private_ip}}\nNETMASK=255.255.240.0"
+      become: true
+    - name: Allow root access through SSH
+      replace: dest="/etc/ssh/sshd_config"
+               regexp='^#PermitRootLogin yes'
+               replace='PermitRootLogin yes'
+      become: true
+    - command: python ~/edit_authorized_keys.py
+    - name: create swap
+      command: sudo dd if=/dev/zero of=/swapfile bs=1024 count=1024k
+      ignore_errors: True
+    - name:  make swapfile
+      command: mkswap /swapfile
+      become: true
+      ignore_errors: True
+    - name: swapon swapfile
+      command: sudo swapon /swapfile
+      ignore_errors: True
+    - name: Add swap
+      action: lineinfile
+              dest="/etc/fstab"
+              line="/swapfile       none    swap    sw      0       0"
+      become: true
+    - name: Install IPA Server
+      command: sudo ipa-server-install -U --realm {{RealmName}} --domain {{DomainName}} --hostname {{ipa_master_private_dns}} --ds-password passw0rd --admin-password passw0rd
+      ignore_errors: True
+    - name: Restart sshd
+      command: sudo service sshd restart
+    - name: Enable Secure Communication
+      replace: dest="/etc/dirsrv/slapd-US-WEST-2-COMPUTE-INTERNAL/dse.ldif"
+               regexp='^nsslapd-minssf{{":"}} 0'
+               replace='nsslapd-minssf{{":"}} 56'
+      become: true
+    - name: Disable anonymous-access
+      replace: dest="/etc/dirsrv/slapd-US-WEST-2-COMPUTE-INTERNAL/dse.ldif"
+               regexp='^nsslapd-allow-anonymous-access{{":"}} off'
+               replace='nsslapd-allow-anonymous-access{{":"}} on'
+      become: true
+    - name: restart ipa 
+      command: sudo ipactl start
