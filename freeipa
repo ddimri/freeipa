@@ -1,0 +1,16 @@
+# Jump Boxes inventory
+[JumpBox]
+
+# TAP hosts
+[ec2tap]
+
+# HIP hosts
+[ec2hip]
+
+[ipamaster1]
+
+[ipamaster2]
+
+[ipaopenvpn1]
+
+[ipaopenvpn2]
