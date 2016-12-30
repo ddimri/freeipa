@@ -111,4 +111,4 @@
     - name: Restart sshd
       command: sudo service sshd restart
     - name: Run replica install
-      command: sudo ipa-replica-install /var/lib/ipa/replica-info-{{ ipa_replica_private_dns }}.gpg --password={{ipa_password}} --admin-password=passw0rd
+      command: sudo ipa-replica-install /var/lib/ipa/replica-info-{{ ipa_replica_private_dns }}.gpg --password={{ipa_password}} --admin-password={{ipa_password}}
