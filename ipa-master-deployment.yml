@@ -77,7 +77,7 @@
               line="/swapfile       none    swap    sw      0       0"
       become: true
     - name: Install IPA Server
-      command: sudo ipa-server-install -U --realm {{RealmName}} --domain {{DomainName}} --hostname {{ipa_master_private_dns}} --ds-password passw0rd --admin-password passw0rd
+      command: sudo ipa-server-install -U --realm {{RealmName}} --domain {{DomainName}} --hostname {{ipa_master_private_dns}} --ds-password {{ipa_ds_password}} --admin-password {{ipa_password}}
       ignore_errors: True
     - name: Restart sshd
       command: sudo service sshd restart
