@@ -1,0 +1,6 @@
+aws_id: xxxxxxxxx
+aws_key: xxxxxxxxxxxx
+ssh_keyname: freeipa-key
+base_dir: /home/ubuntu/security
+ipa_password: xxxxx
+ipa_ds_password: xxxxxx
