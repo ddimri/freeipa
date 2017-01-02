@@ -1,4 +1,4 @@
-i---
+---
  - name: get variables from terraform
    hosts: localhost
    connection: local
