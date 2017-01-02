@@ -18,8 +18,7 @@
     - name: Update the ansible cfg file with host inventory path
       local_action: lineinfile
                     dest="/etc/ansible/ansible.cfg"
-                    regexp={{ base_dir }}
-                    insertafter='\[\[defaults]\]'
+                    insertafter='\[defaults\]'
                     line="inventory      = {{base_dir}}/inventory"
       become: true
     - name: Update the ansible hosts file with new IP addresses
