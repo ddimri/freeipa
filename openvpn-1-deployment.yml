@@ -28,9 +28,23 @@
       become: true
       ignore_errors: True
     - name: Update openvpn conf file
-      action: lineinfile
-              dest="/etc/openvpn/oregon-to-nv.conf"
-              line="port 1194\ndev tun\nstatus-version 2\nstatus openvpn-status.log\nlog openvpn-oregon.log\nlog-append  openvpn-oregon.log\nverb 6\n# Remote peer and network\nremote {{remote_openvpn_eip}}\nroute {{remote_vpc_network}} 255.255.255.0\n# Configure local and remote VPN endpoints\nifconfig {{ipa_openvpn_proxy_1_private_ip}} {{remote_openvpn_private_ip}}\n# The pre-shared static key\nsecret ovpn.key"
+      blockinfile:
+        dest: /etc/openvpn/oregon-to-nv.conf
+        block: |
+         port 1194
+         dev tun
+         status-version 2
+         status openvpn-status.log
+         log openvpn-oregon.log
+         log-append  openvpn-oregon.log
+         verb 6
+         # Remote peer and network
+         remote {{remote_openvpn_eip}}
+         route {{remote_vpc_network}} 255.255.255.0
+         # Configure local and remote VPN endpoints
+         ifconfig {{ipa_openvpn_proxy_1_private_ip}} {{remote_openvpn_private_ip}}
+         # The pre-shared static key
+         secret ovpn.key
       become: true
     - name: Start openvpn
       command: update-rc.d openvpn enable
@@ -87,10 +101,22 @@
                replace='<VirtualHost *:443>'
       become: true
     - name: Configure 000-default.conf
-      action: lineinfile
-              dest="/etc/apache2/sites-enabled/000-default.conf"
-              insertafter='^[ \t]DocumentRoot /var/www/html'
-              line="SSLEngine On\nSSLProxyEngine On\nLogLevel info\nSSLCertificateFile /etc/apache2/ssl/apache.crt\nSSLCertificateKeyFile /etc/apache2/ssl/apache.key\nProxyRequests off\nProxyPass / https://{{ipa_master_1_private_dns}}/\nProxyPassReverse / https://{{ipa_master_1_private_dns}}/\nProxyPassReverseCookieDomain {{ipa_master_1_private_dns}} {{ipa_public_dns}}\nRequestHeader edit Referer ^https://www\.ddiam\.online/ https://{{ipa_master_1_private_dns}}\nErrorLog /var/log/apache2/error.log\nCustomLog /var/log/apache2/access.log combined"
+      blockinfile:
+        dest: /etc/apache2/sites-enabled/000-default.conf
+        insertafter: "^[ \t]DocumentRoot /var/www/html"
+        block: |
+          SSLEngine On
+          SSLProxyEngine On
+          LogLevel info
+          SSLCertificateFile /etc/apache2/ssl/apache.crt
+          SSLCertificateKeyFile /etc/apache2/ssl/apache.key
+          ProxyRequests off
+          ProxyPass / https://{{ipa_master_1_private_dns}}/
+          ProxyPassReverse / https://{{ipa_master_1_private_dns}}/
+          ProxyPassReverseCookieDomain {{ipa_master_1_private_dns}} {{ipa_public_dns}}
+          RequestHeader edit Referer ^https://www\.ddiam\.online/ https://{{ipa_master_1_private_dns}}
+          ErrorLog /var/log/apache2/error.log
+          CustomLog /var/log/apache2/access.log combined
       become: true
     - name: Restart apache
       command: service apache2 restart
