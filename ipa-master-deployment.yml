@@ -93,5 +93,7 @@
                regexp='^nsslapd-allow-anonymous-access{{":"}} off'
                replace='nsslapd-allow-anonymous-access{{":"}} on'
       become: true
+    - name: customize ldap schema on ipa master
+      command: ldapmodify -H ldap://"{{ipa_master_1_private_dns}}" -w {{ipa_password}} -D "cn=Directory Manager" -f ~/custom-host-schema.ldif
     - name: restart ipa
       command: sudo ipactl start
