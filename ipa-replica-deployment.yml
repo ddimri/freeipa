@@ -1,6 +1,6 @@
 ---
  - name: Install Ansible on IPA replica server
-   hosts: ipareplica
+   hosts: ipamaster2
    become: false
    vars:
     ansible_ssh_pipelining: no
@@ -29,13 +29,13 @@
       action: lineinfile
               dest='/etc/hosts'
               insertafter='^127.0.0.1'
-              line='{{ipa_master_private_ip}}    {{ipa_master_private_dns}}    ipa-server'
+              line='{{ipa_master_1_private_ip}}    {{ipa_master_1_private_dns}}    ipa-server'
       become: true
     - name: Update the hosts file
       action: lineinfile
               dest='/etc/hosts'
               insertafter='^127.0.0.1'
-              line='{{ipa_replica_private_ip}}    {{ipa_replica_private_dns}}    ipa-server'
+              line='{{ipa_master_2_private_ip}}    {{ipa_master_2_private_dns}}    ipa-server'
       become: true
     - name: Update the hostname
       replace: dest='/etc/hostname'
@@ -45,20 +45,20 @@
     - name: Update the hostname
       action: lineinfile
               dest='/etc/hostname'
-              line="{{ ipa_replica_private_dns }}"
+              line="{{ ipa_master_2_private_dns }}"
       become: true
     - command: sudo yum install ipa-server -y
       ignore_errors: True
     - name: Update /etc/sysconfig/network
       action: lineinfile
               dest="/etc/sysconfig/network"
-              line="HOSTNAME={{ipa_replica_private_dns}}"
+              line="HOSTNAME={{ipa_master_2_private_dns}}"
       become: true
-    - command: sudo sysctl kernel.hostname={{ipa_replica_private_dns}}
+    - command: sudo sysctl kernel.hostname={{ipa_master_2_private_dns}}
     - name: Update /etc/sysconfig/network-scripts/ifcfg-eth0
       action: lineinfile
               dest="/etc/sysconfig/network-scripts/ifcfg-eth0"
-              line="IPADDR={{ipa_replica_private_ip}}\nNETMASK=255.255.240.0"
+              line="IPADDR={{ipa_master_2_private_ip}}\nNETMASK=255.255.240.0"
       become: true
     - name: Allow root access through SSH
       replace: dest="/etc/ssh/sshd_config"
@@ -83,7 +83,7 @@
               line="/swapfile       none    swap    sw      0       0"
       become: true
  - name: Prepare IPA Replica on Master
-   hosts: ipamaster
+   hosts: ipamaster1
    become: false
    vars_files:
     - ~/security/ipa/files/awsindia0cred.yml
@@ -93,16 +93,16 @@
       action: lineinfile
               dest='/etc/hosts'
               insertafter='^127.0.0.1'
-              line='{{ipa_replica_private_ip}}    {{ipa_replica_private_dns}}    ipa-server'
+              line='{{ipa_master_2_private_ip}}    {{ipa_master_2_private_dns}}    ipa-server'
       become: true
     - name: IPA replica prepare
-      command: sudo ipa-replica-prepare {{ ipa_replica_private_dns }} --password={{ipa_password}}
+      command: sudo ipa-replica-prepare {{ ipa_master_2_private_dns }} --password={{ipa_password}}
       ignore_errors: True
     - name: copy replica file
-      command: sudo  scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem /var/lib/ipa/replica-info-{{ ipa_replica_private_dns }}.gpg root@{{ ipa_replica_private_dns }}:/var/lib/ipa/
+      command: sudo  scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem /var/lib/ipa/replica-info-{{ ipa_master_2_private_dns }}.gpg root@{{ ipa_master_2_private_dns }}:/var/lib/ipa/
       ignore_errors: True
  - name: IPA replica enrollment
-   hosts: ipareplica
+   hosts: ipamaster2
    become: true
    vars_files:
     - ~/security/ipa/files/awsindia0cred.yml
@@ -111,4 +111,4 @@
     - name: Restart sshd
       command: sudo service sshd restart
     - name: Run replica install
-      command: sudo ipa-replica-install /var/lib/ipa/replica-info-{{ ipa_replica_private_dns }}.gpg --password={{ipa_password}} --admin-password={{ipa_password}}
+      command: sudo ipa-replica-install /var/lib/ipa/replica-info-{{ ipa_master_2_private_dns }}.gpg --password={{ipa_password}} --admin-password={{ipa_password}}
