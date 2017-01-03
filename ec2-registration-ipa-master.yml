@@ -38,3 +38,6 @@
     - name: copy edit_authorized_keys.py to remote host
       command: scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem ~/security/ipa/edit_authorized_keys.py centos@{{ipa_master_1_private_dns}}:~
       ignore_errors: True
+     - name: copy schema update ldif file to ipa
+      command: scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem ~/security/ipa/custom-host-schema.ldif centos@{{ipa_master_1_private_dns}}:~
+      ignore_errors: True
