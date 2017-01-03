@@ -58,7 +58,7 @@
     - name: Update /etc/sysconfig/network-scripts/ifcfg-eth0
       action: lineinfile
               dest="/etc/sysconfig/network-scripts/ifcfg-eth0"
-              line="IPADDR={{ipa_master_2_private_ip}}\nNETMASK=255.255.240.0"
+              line="IPADDR={{ipa_master_2_private_ip}}\nNETMASK=255.255.255.0"
       become: true
     - name: Allow root access through SSH
       replace: dest="/etc/ssh/sshd_config"
