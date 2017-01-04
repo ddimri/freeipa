@@ -1,7 +1,6 @@
 aws_id: xxxxxxxxx
 aws_key: xxxxxxxxxxxx
-ssh_keyname_replica: xxxxxx
-ssh_keyname_master1: freeipa-key
+ssh_keyname: xxxxx
 base_dir: /home/ubuntu/security
 ipa_password: xxxxx
 ipa_ds_password: xxxxxx
