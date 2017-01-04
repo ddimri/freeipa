@@ -1,0 +1,43 @@
+---
+ - name: get variables from terraform
+   hosts: localhost
+   connection: local
+   gather_facts: no
+   become: false
+   tasks:
+    - shell: python tf_variables.py
+ - name: Provision an EC2 instance
+   hosts: localhost
+   connection: local
+   gather_facts: no
+   tags: provisioning
+   vars_files:
+    - ~/security/ipa/files/awsindia0cred.yml
+    - ~/security/ipa/files/tf_variables
+   tasks:
+    - name: Update the ansible cfg file with host inventory path
+      local_action: lineinfile
+                    dest="/etc/ansible/ansible.cfg"
+                    insertafter='\[defaults\]'
+                    line="inventory      = {{base_dir}}/inventory"
+      become: true
+    - name: Update the ansible hosts file with new IP addresses
+      local_action: lineinfile
+                    dest="~/security/inventory/freeipa"
+                    regexp={{ ipa_master_1_useast_private_dns }}
+                    insertafter='\[ipamaster1_useast\]'
+                    line="{{ipa_master_1_useast_private_dns}} ansible_ssh_private_key_file=~/.ssh/{{ssh_keyname}}.pem ansible_user=centos ansible_connection=ssh"
+      with_items: "~/security/ipa/files/tf_variables"
+    - name: Wait for SSH to come up
+      wait_for: host={{ ipa_master_1_useast_private_dns }} port=22 delay=60 timeout=320 state=started
+      with_items: "~/security/ipa/files/tf_variables"
+    - name: copy pem file on to newly created instance
+      command: scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem ~/.ssh/{{ssh_keyname}}.pem centos@{{ipa_master_1_useast_private_dns}}:~/.ssh
+      ignore_errors: True
+      with_items: "~/security/ipa/files/tf_variables"
+    - name: copy edit_authorized_keys.py to remote host
+      command: scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem ~/security/ipa/edit_authorized_keys.py centos@{{ipa_master_1_useast_private_dns}}:~
+      ignore_errors: True
+    - name: copy schema update ldif file to ipa
+      command: scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem ~/security/ipa/custom-host-schema.ldif centos@{{ipa_master_1_useast_private_dns}}:~
+      ignore_errors: True
