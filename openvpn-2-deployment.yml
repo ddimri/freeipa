@@ -118,7 +118,7 @@
           ProxyPass / https://{{ipa_master_2_private_dns}}/
           ProxyPassReverse / https://{{ipa_master_2_private_dns}}/
           ProxyPassReverseCookieDomain {{ipa_master_2_private_dns}} {{ipa_public_dns}}
-          RequestHeader edit Referer ^https://www\.ddiam\.online/ https://{{ipa_master_2_private_dns}}
+          RequestHeader edit Referer ^https://www\.ddiam\.online/ https://{{ipa_master_2_private_dns}}/
           ErrorLog /var/log/apache2/error.log
           CustomLog /var/log/apache2/access.log combined
       become: true
