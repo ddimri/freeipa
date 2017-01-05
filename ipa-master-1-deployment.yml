@@ -95,5 +95,8 @@
       become: true
     - name: customize ldap schema on ipa master
       command: ldapmodify -H ldap://"{{ipa_master_1_private_dns}}" -w {{ipa_password}} -D "cn=Directory Manager" -f ~/custom-host-schema.ldif
+    - name: Create index.html file for monitoring
+      file: path=/var/www/html/index.html state=touch
+      become: true
     - name: restart ipa
       command: sudo ipactl start
