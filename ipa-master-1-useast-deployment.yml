@@ -112,6 +112,7 @@
       command: sudo service sshd restart
     - name: Run replica install
       command: sudo ipa-replica-install /var/lib/ipa/replica-info-{{ ipa_master_1_useast_private_dns }}.gpg --password={{ipa_password}} --admin-password={{ipa_password}}
+      ignore_errors: True
     - name: Create index.html file for monitoring
       file: path=/var/www/html/index.html state=touch
       become: true
