@@ -96,7 +96,7 @@
               line='{{ipa_master_2_private_ip}}    {{ipa_master_2_private_dns}}    ipa-server'
       become: true
     - name: IPA replica prepare
-      command: sudo ipa-replica-prepare {{ ipa_master_2_private_dns }} --password={{ipa_password}}
+      command: sudo ipa-replica-prepare {{ ipa_master_2_private_dns }} --password={{ipa_password}} --no-wait-for-dns
       ignore_errors: True
     - name: copy replica file
       command: sudo  scp -oStrictHostKeyChecking=no -i ~/.ssh/{{ssh_keyname}}.pem /var/lib/ipa/replica-info-{{ ipa_master_2_private_dns }}.gpg root@{{ ipa_master_2_private_dns }}:/var/lib/ipa/
