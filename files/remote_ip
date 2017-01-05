@@ -1,0 +1,6 @@
+remote_openvpn_eip: <EIP>
+remote_openvpn_2_eip: <EIP2>
+remote_vpc_network:  <Remote VPN Network ID>
+remote_openvpn_private_ip: <Private IP>
+remote_openvpn_2_private_ip: <Private IP2>
+ipa_public_dns: www.ddiam.online
